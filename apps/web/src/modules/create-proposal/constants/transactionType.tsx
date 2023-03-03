@@ -15,6 +15,7 @@ export interface TransactionTypeProps {
   subTitle: string
   icon: IconType
   iconBackdrop: string
+  iconBorder?: boolean
 }
 
 export interface TransactionTypesPropsMap {

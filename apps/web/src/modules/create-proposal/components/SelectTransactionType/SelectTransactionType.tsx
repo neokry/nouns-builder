@@ -1,8 +1,9 @@
-import { Stack, Text } from '@zoralabs/zord'
+import { Flex, Stack, Text } from '@zoralabs/zord'
 import React from 'react'
 
 import { TRANSACTION_FORM_OPTIONS, TransactionFormType } from '../TransactionForm'
 import AdminNav from './AdminNav'
+import { NounsConnect } from './NounsConnect'
 import TransactionTypeCard from './TransactionTypeCard'
 
 interface SelectTransactionTypeProps {
@@ -27,6 +28,14 @@ export const SelectTransactionType: React.FC<SelectTransactionTypeProps> = ({
           onClick={() => onSelect(transactionType)}
         />
       ))}
+      <Flex
+        borderWidth={'thin'}
+        borderStyle={'solid'}
+        borderColor={'ghostHover'}
+        mt={'x4'}
+        mb={'x4'}
+      />
+      <NounsConnect />
       <AdminNav />
     </Stack>
   )

@@ -1,0 +1,153 @@
+import { Flex } from '@zoralabs/zord'
+import { motion } from 'framer-motion'
+import React, { ReactNode } from 'react'
+
+import { AddressType } from 'src/typings'
+
+import { TransactionType } from '../../../constants'
+import { useCustomTransactionStore, useProposalStore } from '../../../stores'
+import { customTransactionWrapper, transactionFormWrapper } from './CustomTransaction.css'
+import { FormHeading } from './FormHeading'
+import { ABI, Address, Arguments, Function, Summary, Value } from './forms'
+
+export const CustomTransaction: React.FC = () => {
+  const { addTransaction } = useProposalStore()
+
+  const {
+    active: activeCustomTransactionSection,
+    customTransaction,
+    reset,
+  } = useCustomTransactionStore()
+
+  const sections: Array<{ title: string; form: ReactNode }> = React.useMemo(() => {
+    const address = {
+      title: 'Address',
+      form: <Address key={'address'} />,
+    }
+
+    const abi = {
+      title: 'ABI Interface',
+      form: <ABI key={'abi'} />,
+    }
+
+    const fn = {
+      title: 'Function',
+      form: <Function key={'function'} />,
+    }
+
+    const args = {
+      title: 'Arguments',
+      form: <Arguments key={'arguments'} />,
+    }
+
+    const value = {
+      title: 'Value',
+      form: <Value key={'arguments'} />,
+    }
+
+    const summary = {
+      title: 'Summary',
+      form: <Summary key={'summary'} />,
+    }
+
+    return [address, abi, fn, args, value, summary]
+  }, [])
+
+  const currentTransaction = React.useMemo(() => {
+    if (!customTransaction?.calldata) return
+
+    if (customTransaction?.function?.name === 'sendEth(address)') {
+      return {
+        type: TransactionType.SEND_ETH,
+        transactions: [
+          {
+            functionSignature: 'sendEth(address)',
+            target: customTransaction?.address as AddressType,
+            calldata: customTransaction?.calldata,
+            value: customTransaction?.value,
+          },
+        ],
+      }
+    }
+
+    if (customTransaction?.function?.name === 'call(address,calldata)') {
+      return {
+        type: TransactionType.CUSTOM,
+        transactions: [
+          {
+            functionSignature: 'call(address,calldata)',
+            target: customTransaction?.address as AddressType,
+            calldata: customTransaction?.calldata,
+            value: customTransaction?.value,
+          },
+        ],
+      }
+    }
+
+    if (customTransaction?.contract) {
+      const fns: [string, any][] = Object.entries(customTransaction?.contract?.functions)
+      const signature = fns.filter(
+        (fn) => fn[1].name === customTransaction.function.name
+      )?.[0]?.[0]
+      return {
+        type: TransactionType.CUSTOM,
+        transactions: [
+          {
+            functionSignature: signature,
+            target: customTransaction?.address as AddressType,
+            calldata: customTransaction?.calldata,
+            value: customTransaction?.value,
+          },
+        ],
+      }
+    }
+  }, [customTransaction])
+
+  React.useEffect(() => {
+    if (!currentTransaction) return
+
+    addTransaction(currentTransaction)
+    reset()
+  }, [currentTransaction, customTransaction])
+
+  return (
+    <Flex
+      pb={'x6'}
+      direction={'column'}
+      borderWidth={'normal'}
+      borderStyle={'solid'}
+      borderColor={'ghostHover'}
+      style={{ borderRadius: '12px' }}
+    >
+      <Flex
+        position={'relative'}
+        direction={'column'}
+        width={'100%'}
+        p={'x16'}
+        className={customTransactionWrapper}
+      >
+        <FormHeading sections={sections} />
+        <Flex direction={'column'} className={transactionFormWrapper}>
+          <motion.div
+            key={sections[activeCustomTransactionSection].title}
+            variants={{
+              closed: {
+                y: 10,
+                opacity: 0,
+              },
+              open: {
+                y: 0,
+                opacity: 1,
+              },
+            }}
+            initial="closed"
+            animate="open"
+            exit="closed"
+          >
+            {sections[activeCustomTransactionSection].form}
+          </motion.div>
+        </Flex>
+      </Flex>
+    </Flex>
+  )
+}

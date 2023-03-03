@@ -1,15 +1,7 @@
-import { GetContractResult } from '@wagmi/core'
 import { ContractInterface } from 'ethers'
 import { IPFSUploadResponse } from 'ipfs-service'
 import { ReactElement } from 'react'
 
-import {
-  auctionAbi,
-  governorAbi,
-  metadataAbi,
-  tokenAbi,
-  treasuryAbi,
-} from 'src/data/contract/abis'
 import {
   ImageMediaEncodingFragment,
   MarketSortKey,
@@ -18,13 +10,6 @@ import {
   ProposalVoteFragment as ProposalVote,
   Support,
 } from 'src/data/graphql/sdk.generated'
-
-export interface CreateFormSection {
-  title: string
-  heading?: string | string[]
-  subHeading?: string | string[]
-  forms: ReactElement[]
-}
 
 export interface Duration {
   seconds?: number
@@ -195,19 +180,3 @@ export const enum NETWORK {
 export type AddressType = `0x${string}`
 
 export type BytesType = `0x${string}`
-
-export interface DaoContractAddresses {
-  token?: AddressType
-  metadata?: AddressType
-  auction?: AddressType
-  treasury?: AddressType
-  governor?: AddressType
-}
-
-export interface DaoContracts {
-  tokenContract?: GetContractResult<typeof tokenAbi>
-  metadataContract?: GetContractResult<typeof metadataAbi>
-  auctionContract?: GetContractResult<typeof auctionAbi>
-  treasuryContract?: GetContractResult<typeof treasuryAbi>
-  governorContract?: GetContractResult<typeof governorAbi>
-}

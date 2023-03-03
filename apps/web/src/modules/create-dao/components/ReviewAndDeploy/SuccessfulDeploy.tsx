@@ -1,23 +1,21 @@
 import { Box, Button, Flex, Paragraph, Text } from '@zoralabs/zord'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
-import { useContractRead } from 'wagmi'
+import { useContract, useContractRead, useSigner } from 'wagmi'
 
 import CopyButton from 'src/components/CopyButton/CopyButton'
-import { tokenAbi } from 'src/data/contract/abis'
-import { useMetadataContract } from 'src/hooks'
-import { useLayoutStore } from 'src/stores'
-import { useDaoStore } from 'src/stores/useDaoStore'
-import { useFormStore } from 'src/stores/useFormStore'
+import { metadataAbi, tokenAbi } from 'src/data/contract/abis'
+import { DaoContractAddresses, useDaoStore } from 'src/modules/dao'
 import {
   deployPendingButtonStyle,
   infoSectionLabelStyle,
   infoSectionValueVariants,
   successHeadingStyle,
 } from 'src/styles/deploy.css'
-import type { DaoContractAddresses } from 'src/typings'
 import { walletSnippet } from 'src/utils/helpers'
-import { transformFileProperties } from 'src/utils/transformFileProperties'
+
+import { useFormStore } from '../../stores'
+import { transformFileProperties } from '../../utils'
 
 interface DeployedDaoProps extends DaoContractAddresses {
   title: string
@@ -41,9 +39,13 @@ export const SuccessfulDeploy: React.FC<DeployedDaoProps> = ({
   const router = useRouter()
   const { general, ipfsUpload, orderedLayers, setFulfilledSections, resetForm } =
     useFormStore()
-  const signerAddress = useLayoutStore((state) => state.signerAddress)
+  const { data: signer } = useSigner()
   const { addresses, setAddresses } = useDaoStore()
-  const { contract: metadataContract } = useMetadataContract(addresses?.metadata)
+  const metadataContract = useContract({
+    abi: metadataAbi,
+    address: addresses.metadata,
+    signerOrProvider: signer,
+  })
   const [isPendingTransaction, setIsPendingTransaction] = useState<boolean>(false)
   const [deploymentError, setDeploymentError] = useState<string | undefined>()
 
@@ -86,6 +88,7 @@ export const SuccessfulDeploy: React.FC<DeployedDaoProps> = ({
       return
     }
 
+    const signerAddress = await signer?.getAddress()
     if (tokenOwner !== signerAddress) {
       setDeploymentError(DEPLOYMENT_ERROR.MISMATCHING_SIGNER)
       return
@@ -216,7 +219,7 @@ export const SuccessfulDeploy: React.FC<DeployedDaoProps> = ({
         size={'lg'}
         borderRadius={'curved'}
         className={isPendingTransaction ? deployPendingButtonStyle : undefined}
-        disabled={!transactions || isPendingTransaction}
+        disabled={!transactions || isPendingTransaction || !metadataContract}
         onClick={handleDeployMetadata}
         w={'100%'}
         mt={'x8'}

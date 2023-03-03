@@ -1,8 +1,10 @@
 import React, { ReactNode } from 'react'
 
-import { TransactionType } from '../../constants'
-import { Airdrop, CustomTransaction } from './forms'
-import SendEth from './forms/SendEth/SendEth'
+import { TransactionType } from 'src/modules/create-proposal/constants'
+
+import { Airdrop } from './Airdrop'
+import { CustomTransaction } from './CustomTransaction'
+import { SendEth } from './SendEth'
 
 export type TransactionFormType = typeof TRANSACTION_FORM_OPTIONS[number]
 
